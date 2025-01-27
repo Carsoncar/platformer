@@ -10,10 +10,50 @@
       margin: 0 auto;
       background: lightblue;  /* Blue background */
     }
+
+    /* Styling for the buttons */
+    .button-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .button {
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #left {
+      background-color: rgba(255, 0, 0, 0.6);
+    }
+
+    #right {
+      background-color: rgba(0, 255, 0, 0.6);
+    }
+
+    #jump {
+      background-color: rgba(0, 0, 255, 0.6);
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
+  
+  <!-- On-screen buttons -->
+  <div class="button-container">
+    <button id="left" class="button">Left</button>
+    <button id="right" class="button">Right</button>
+    <button id="jump" class="button">Jump</button>
+  </div>
+
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -89,54 +129,42 @@
     let coins = generateCoins(platforms);
     let enemies = generateEnemies(platforms);
 
-    // Touch controls state
-    let touchControls = {
+    // Button controls state
+    let buttonControls = {
       left: false,
       right: false,
       jump: false,
     };
 
-    // Handle touch start
-    canvas.addEventListener("touchstart", (e) => {
-      const touchX = e.touches[0].clientX;
-      const touchY = e.touches[0].clientY;
-
-      // Left area touch
-      if (touchX < canvas.width / 3) {
-        touchControls.left = true;
-      } else if (touchX > canvas.width * 2 / 3) {
-        touchControls.right = true;
-      }
-
-      // Jump area touch (center area for simplicity)
-      if (touchY > canvas.height - 100) {
-        touchControls.jump = true;
-      }
-
-      e.preventDefault(); // Prevent default touch behavior (like scrolling)
+    // Button event listeners
+    document.getElementById("left").addEventListener("click", () => {
+      buttonControls.left = true;
     });
 
-    // Handle touch end
-    canvas.addEventListener("touchend", (e) => {
-      touchControls.left = false;
-      touchControls.right = false;
-      touchControls.jump = false;
-      e.preventDefault();
+    document.getElementById("right").addEventListener("click", () => {
+      buttonControls.right = true;
+    });
+
+    document.getElementById("jump").addEventListener("click", () => {
+      if (player.onGround) {
+        buttonControls.jump = true;
+      }
     });
 
     // Game logic
     function update() {
       if (gameOver) return;
 
-      // Left and right movement based on touch input
-      if (touchControls.left) player.dx = -player.speed;
-      else if (touchControls.right) player.dx = player.speed;
+      // Left and right movement based on button clicks
+      if (buttonControls.left) player.dx = -player.speed;
+      else if (buttonControls.right) player.dx = player.speed;
       else player.dx = 0;
 
-      // Jump based on touch input
-      if (touchControls.jump && player.onGround) {
+      // Jump based on button click
+      if (buttonControls.jump) {
         player.dy = player.jumpPower;
         player.onGround = false;
+        buttonControls.jump = false;
       }
 
       player.dy += player.gravity;
