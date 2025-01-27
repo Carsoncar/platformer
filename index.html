@@ -26,8 +26,8 @@
       height: 30,
       dx: 0,
       dy: 0,
-      speed: 10,
-      jumpPower: -10,
+      speed: 5,
+      jumpPower: -8,
       gravity: 0.2,
       onGround: false,
     };
@@ -89,20 +89,52 @@
     let coins = generateCoins(platforms);
     let enemies = generateEnemies(platforms);
 
-    // Controls
-    let keys = {};
-    window.addEventListener("keydown", (e) => (keys[e.key] = true));
-    window.addEventListener("keyup", (e) => (keys[e.key] = false));
+    // Touch controls state
+    let touchControls = {
+      left: false,
+      right: false,
+      jump: false,
+    };
+
+    // Handle touch start
+    canvas.addEventListener("touchstart", (e) => {
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+
+      // Left area touch
+      if (touchX < canvas.width / 3) {
+        touchControls.left = true;
+      } else if (touchX > canvas.width * 2 / 3) {
+        touchControls.right = true;
+      }
+
+      // Jump area touch (center area for simplicity)
+      if (touchY > canvas.height - 100) {
+        touchControls.jump = true;
+      }
+
+      e.preventDefault(); // Prevent default touch behavior (like scrolling)
+    });
+
+    // Handle touch end
+    canvas.addEventListener("touchend", (e) => {
+      touchControls.left = false;
+      touchControls.right = false;
+      touchControls.jump = false;
+      e.preventDefault();
+    });
 
     // Game logic
     function update() {
       if (gameOver) return;
 
-      if (keys["a"]) player.dx = -player.speed;
-      else if (keys["d"]) player.dx = player.speed;
+      // Left and right movement based on touch input
+      if (touchControls.left) player.dx = -player.speed;
+      else if (touchControls.right) player.dx = player.speed;
       else player.dx = 0;
 
-      if (keys["w"] && player.onGround) {
+      // Jump based on touch input
+      if (touchControls.jump && player.onGround) {
         player.dy = player.jumpPower;
         player.onGround = false;
       }
